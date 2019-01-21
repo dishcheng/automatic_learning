@@ -93,7 +93,7 @@ if install_composer == 'y':
     res = os.system('sudo wget https://dl.laravel-china.org/composer.phar -O /usr/local/bin/composer')
     if res == 0:
         os.system('sudo chmod a+x /usr/local/bin/composer')
-        os.system('composer config -g repo.packagist composer https://packagist.phpcomposer.com')
+        os.system('composer config -g repo.packagist composer https://packagist.laravel-china.org')
     else:
         print('composer 安装失败')
 else:
