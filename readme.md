@@ -117,3 +117,107 @@ sudo命令相关设置，sudo命令的路径，sudo参数，能够使用sudo的u
 
 例：
 > ansible all -u deploy -a 'ls' 
+
+将ls命令传入commend模块
+
+| 参数 | 意义 |
+| :------: | :------: | 
+| -a | 传入模块的参数 |
+| -C -D | 两个一起使用，检测hosts规则文件的修改|
+| -l | 限制规则匹配的主机数量|
+| --list-hosts | 显示所有匹配规则的主机数|
+| -m -M | 一起用指定所使用的模块和模块路径|
+| -u | ssh连接的用户名，默认用root，ansible.cfg中可以配置|
+| -k | 提示输入ssh登录密码。当使用密码验证的时候用|
+| -s | sudo运行|
+| -C | 只是测试一下会改变什么内容，不会真正去执行|
+| -c | 连接类型（default=smart）|
+| -f | fork多少个进程并发处理，默认为5个|
+| -i | 指定hosts文件路径，默认default=/etc/ansible/hosts|
+| -M | 要执行的模块路径，默认为/usr/share/ansible|
+| -o | 压缩输出，摘要输出|
+| -T | ssh连接超时时间，默认10秒|
+| -t | 日志输出到该目录，日志文件名以主机名命名|
+| --syntax-check | 检查语法|
+
+运行
+* 显示匹配结果
+> ansible all -a 'ls' --list-hosts -u deploy
+```
+hosts (1):
+    94.191.29.229
+```
+
+# 分组（inventory）
+修改hosts如下所示
+
+```
+94.191.29.229
+[qianhu]
+47.107.244.138
+94.191.29.229
+[hooook_test]
+39.106.39.179
+94.191.29.229
+```
+[]括号中包含的就是组名，一台机器可以属于多个组，一个组可以有多个机器
+测试
+> ansible qianhu -a 'ls' -u deploy
+
+返回
+```
+47.107.244.138 | CHANGED | rc=0 >>
+authorized_keys
+
+94.191.29.229 | CHANGED | rc=0 >>
+auto.py
+```
+
+还可以
+> ansible 94.191.29.229 -a 'ls' -u deploy
+
+## 自定义连接端口
+如果有几台服务器ssh端口不是22可以在hosts中定义
+```
+94.191.29.229:2000
+[qianhu]
+47.107.244.138
+94.191.29.229
+[hooook_test]
+39.106.39.179:2009
+94.191.29.229
+```
+
+## 机器太多但是连续可以这样使用
+```
+[vim]
+vim[1:50].example.com
+vim[a-f].example.com
+```
+匹配
+vim1.example.com到vim2.example.com
+
+## 指定一组相关机器，匹配地址段
+> ansible 47.107.244.* -a 'ls' -u deploy
+
+## 指定一组不相关机器(冒号分割)
+> ansible 47.107.244.138:39.106.39.179 -a 'ls' -u deploy
+
+```
+47.107.244.138 | CHANGED | rc=0 >>
+authorized_keys
+
+39.106.39.179 | CHANGED | rc=0 >>
+```
+
+## 匹配group_one组
+> ansible group_one -a 'ls' -u deploy
+
+## 匹配group_one和group_two组
+> ansible group_one:group_two -a 'ls' -u deploy
+
+## 指定在group_one组中但不再group_two组中
+> ansible group_one:!group_two -a 'ls' -u deploy
+
+## 指定同时在group_one组中和group_two组中
+> ansible group_one:&group_two -a 'ls' -u deploy
