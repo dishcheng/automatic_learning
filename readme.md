@@ -221,3 +221,138 @@ authorized_keys
 
 ## 指定同时在group_one组中和group_two组中
 > ansible group_one:&group_two -a 'ls' -u deploy
+
+## ad-Hoc
+### 在group_one中的所有机器会fork十个子进程并以并行方式执行重启命令（即每次重启十个）
+> ansible group_one -a "/sbin/reboot" -f 10 
+
+### 使用sudo
+> ansible group_one -a "/sbin/reboot"  -u username --sudo 
+
+### 文件管理（file模块）
+#### 创建文件夹（根目录下创建test_dir文件夹）
+> ansible 94.191.29.229 -m file -a "dest=/test_dir mode=755 owner=deploy group=deploy state=directory" -u deploy
+```
+94.191.29.229 | CHANGED => {
+    "changed": true,
+    "gid": 1000,
+    "group": "deploy",
+    "mode": "0755",
+    "owner": "deploy",
+    "path": "/test_dir",
+    "size": 4096,
+    "state": "directory",
+    "uid": 1000
+}
+```
+
+### 拷贝文件（copy模块）
+force 如果内容不同，是否启用强制覆盖.（(Choices: yes, no) [Default: yes]）
+owner 文件/目录所有者
+dest  远端的绝对路径。如果 src 是一个目录，那么 dest 的地址也必须是一个目录(如果前面加了'/'路径，标示复制到服务器的根目录)
+src   本地路径（如果以'/'结尾，则 copy 文件夹内的内容，不包含文件夹本身，如果没有以'/'结尾，则会包含文件夹本身。）
+> ansible 94.191.29.229 -m copy -a "src=/etc/hosts dest=/tmp/hosts" -u deploy
+```
+94.191.29.229 | CHANGED => {
+    "changed": true,
+    "checksum": "6635034a9924c8deca789fee4c59120538eda790",
+    "dest": "/tmp/hosts",
+    "gid": 1000,
+    "group": "deploy",
+    "md5sum": "dad8a484ffaa6dd51db785dc59aae0d8",
+    "mode": "0664",
+    "owner": "deploy",
+    "size": 242,
+    "src": "/home/deploy/.ansible/tmp/ansible-tmp-1548244990.59584-169057950898527/source",
+    "state": "file",
+    "uid": 1000
+}
+```
+
+### 软件包管理（centos使用-m yum ,ubuntu使用-m apt）
+#### 确认一个软件包已经安装，但不去升级它
+> ansible 94.191.29.229 -m apt -a 'name=nginx state=present' -u deploy --sudo
+
+没有找到这个包
+```
+94.191.29.229 | FAILED! => {
+    "changed": false,
+    "msg": "No package matching 'acme' is available"
+}
+```
+
+找到这个包
+```
+94.191.29.229 | SUCCESS => {
+    "cache_update_time": 1548245737,
+    "cache_updated": false,
+    "changed": false
+}
+```
+
+#### 确认一个软件包没有安装
+> ansible 94.191.29.229 -m apt -a 'name=nginx state=absent' -u deploy --sudo
+
+确认这个包没有安装
+```
+94.191.29.229 | SUCCESS => {
+    "changed": false
+}
+```
+
+找到这个包
+```
+94.191.29.229 | CHANGED => {
+    "changed": true,
+    "stderr": "",
+    "stderr_lines": [],
+    "stdout": "Reading package lists...\nBuilding dependency tree...\nReading state information...\nThe following packages were automatically installed and are no longer required:\n  nginx-common nginx-core ssl-cert\nUse 'sudo apt autoremove' to remove them.\nThe following packages will be REMOVED:\n  nginx\n0 upgraded, 0 newly installed, 1 to remove and 26 not upgraded.\nAfter this operation, 37.9 kB disk space will be freed.\n(Reading database ... \r(Reading database ... 5%\r(Reading database ... 10%\r(Reading database ... 15%\r(Reading database ... 20%\r(Reading database ... 25%\r(Reading database ... 30%\r(Reading database ... 35%\r(Reading database ... 40%\r(Reading database ... 45%\r(Reading database ... 50%\r(Reading database ... 55%\r(Reading database ... 60%\r(Reading database ... 65%\r(Reading database ... 70%\r(Reading database ... 75%\r(Reading database ... 80%\r(Reading database ... 85%\r(Reading database ... 90%\r(Reading database ... 95%\r(Reading database ... 100%\r(Reading database ... 101468 files and directories currently installed.)\r\nRemoving nginx (1.10.3-0ubuntu0.16.04.3) ...\r\n",
+    "stdout_lines": [
+        "Reading package lists...",
+        "Building dependency tree...",
+        "Reading state information...",
+        "The following packages were automatically installed and are no longer required:",
+        "  nginx-common nginx-core ssl-cert",
+        "Use 'sudo apt autoremove' to remove them.",
+        "The following packages will be REMOVED:",
+        "  nginx",
+        "0 upgraded, 0 newly installed, 1 to remove and 26 not upgraded.",
+        "After this operation, 37.9 kB disk space will be freed.",
+        "(Reading database ... ",
+        "(Reading database ... 5%",
+        "(Reading database ... 10%",
+        "(Reading database ... 15%",
+        "(Reading database ... 20%",
+        "(Reading database ... 25%",
+        "(Reading database ... 30%",
+        "(Reading database ... 35%",
+        "(Reading database ... 40%",
+        "(Reading database ... 45%",
+        "(Reading database ... 50%",
+        "(Reading database ... 55%",
+        "(Reading database ... 60%",
+        "(Reading database ... 65%",
+        "(Reading database ... 70%",
+        "(Reading database ... 75%",
+        "(Reading database ... 80%",
+        "(Reading database ... 85%",
+        "(Reading database ... 90%",
+        "(Reading database ... 95%",
+        "(Reading database ... 100%",
+        "(Reading database ... 101468 files and directories currently installed.)",
+        "Removing nginx (1.10.3-0ubuntu0.16.04.3) ..."
+    ]
+}
+```
+
+### git模块（拉代码，提交代码）
+...
+
+### service模块（系统服务相关） 
+...
+
+### 执行耗时任务
+-B 3600  表示最多执行60分钟
+-P 0     表示不获取状态
+-P 60    表示每隔1分钟一次状态
+> ansible 94.191.29.229 -B 3600 -P 0 -a 'some_long_time_running'
