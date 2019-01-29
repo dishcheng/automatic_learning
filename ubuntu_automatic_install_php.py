@@ -14,6 +14,11 @@ if 'Ubuntu' not in platform.version():
 
 py_version = sys.version_info[0]  # 获取py大版本号
 
+# os.rename('/etc/apt/sources.list', 'sources.list.bak')
+# shutil.move('./sources.list', '/etc/apt/')
+os.system('sudo mv /etc/apt/sources.list /etc/apt/sources.list.bak')
+os.system('sudo mv ./sources.list /etc/apt/sources.list')
+
 
 # py2 input获取的输入类型是float、或变量名，在python2中需要使用raw_input()获取输入的字符串
 # py3 input获取的输入类型是字符
