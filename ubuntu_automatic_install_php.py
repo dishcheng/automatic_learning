@@ -14,17 +14,53 @@ if 'Ubuntu' not in platform.version():
 
 py_version = sys.version_info[0]  # 获取py大版本号
 
-# os.rename('/etc/apt/sources.list', 'sources.list.bak')
-# shutil.move('./sources.list', '/etc/apt/')
-os.system('sudo mv /etc/apt/sources.list /etc/apt/sources.list.bak')
-os.system('sudo cp ./sources.list /etc/apt/sources.list')
-os.system('sudo apt-get update')
-os.system('sudo apt-get install software-properties-common')
-os.system('sudo locale-gen en_US.UTF-8')
-os.system('sudo apt-get install -y language-pack-en-base')
+res = os.system('sudo mv /etc/apt/sources.list /etc/apt/sources.list.bak')
+if res != 0:
+    print('备份apt源文件失败')
+else:
+    print('备份apt源文件成功')
 
-os.system('sudo cp ./nginx_site /etc/nginx/sites-available')
-os.system('sudo cp ./nginx_site_ssl /etc/nginx/sites-available')
+res = os.system('sudo cp ./sources.list /etc/apt/sources.list')
+if res != 0:
+    print('移动apt源文件失败')
+else:
+    print('移动apt源文件成功')
+
+res = os.system('sudo apt-get update')
+if res != 0:
+    print('更新apt源失败')
+else:
+    print('更新apt源成功')
+
+res = os.system('sudo apt-get install software-properties-common')
+if res != 0:
+    print('software-properties-common失败')
+else:
+    print('software-properties-common成功')
+
+res = os.system('sudo locale-gen en_US.UTF-8')
+if res != 0:
+    print('设置编码失败')
+else:
+    print('设置编码成功')
+
+res = os.system('sudo apt-get install -y language-pack-en-base')
+if res != 0:
+    print('language-pack-en-base失败')
+else:
+    print('language-pack-en-base成功')
+
+res = os.system('sudo cp ./nginx_site /etc/nginx/sites-available')
+if res != 0:
+    print('移动nginx失败')
+else:
+    print('移动nginx源成功')
+
+res = os.system('sudo cp ./nginx_site_ssl /etc/nginx/sites-available')
+if res != 0:
+    print('移动nginx-ssl失败')
+else:
+    print('移动nginx-ssl成功')
 
 
 # py2 input获取的输入类型是float、或变量名，在python2中需要使用raw_input()获取输入的字符串
@@ -116,3 +152,15 @@ install_cmd('zip', install_zip)
 
 # 安装redis
 install_cmd('redis-server', install_redis_server)
+
+res = os.system('sudo apt-get autoremove')
+if res != 0:
+    print('自动删除失败')
+else:
+    print('自动删除成功')
+
+res = os.system('sudo apt-get upgrade')
+if res != 0:
+    print('自动更新失败')
+else:
+    print('自动更新成功')
